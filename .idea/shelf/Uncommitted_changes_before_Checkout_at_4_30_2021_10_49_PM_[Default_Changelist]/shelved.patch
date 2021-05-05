@@ -1,0 +1,325 @@
+Index: app/src/main/java/com/codingwithmitch/foodrecipes/requests/RecipeApi.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.codingwithmitch.foodrecipes.requests;\r\n\r\nimport android.arch.lifecycle.LiveData;\r\n\r\nimport com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;\r\n\r\nimport retrofit2.Call;\r\nimport retrofit2.http.GET;\r\nimport retrofit2.http.Query;\r\n\r\npublic interface RecipeApi {\r\n\r\n    // SEARCH\r\n    @GET(\"api/search\")\r\n    LiveData<ApiResponse<RecipeSearchResponse>> searchRecipe(\r\n            @Query(\"key\") String key,\r\n            @Query(\"q\") String query,\r\n            @Query(\"page\") String page\r\n    );\r\n\r\n    // GET RECIPE REQUEST\r\n    @GET(\"api/get\")\r\n    LiveData<ApiResponse<RecipeResponse>> getRecipe(\r\n            @Query(\"key\") String key,\r\n            @Query(\"rId\") String recipe_id\r\n    );\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/codingwithmitch/foodrecipes/requests/RecipeApi.java	(revision 65169790ccc254e9a94ea180c3d920e90a160f14)
++++ app/src/main/java/com/codingwithmitch/foodrecipes/requests/RecipeApi.java	(date 1619804808219)
+@@ -8,22 +8,22 @@
+ 
+ import retrofit2.Call;
+ import retrofit2.http.GET;
++import retrofit2.http.Path;
+ import retrofit2.http.Query;
+ 
+ public interface RecipeApi {
+ 
+-    // SEARCH
+-    @GET("api/search")
++
++    //    Search
++    @GET("api/v2/recipes")
+     LiveData<ApiResponse<RecipeSearchResponse>> searchRecipe(
+-            @Query("key") String key,
+             @Query("q") String query,
+             @Query("page") String page
+     );
+ 
+-    // GET RECIPE REQUEST
+-    @GET("api/get")
++    //Get Recipe Request
++    @GET("api/v2/recipes/{Id}")
+     LiveData<ApiResponse<RecipeResponse>> getRecipe(
+-            @Query("key") String key,
+-            @Query("rId") String recipe_id
++            @Path("Id") String recipe_id
+     );
+ }
+Index: app/src/main/java/com/codingwithmitch/foodrecipes/util/Constants.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.codingwithmitch.foodrecipes.util;\r\n\r\npublic class Constants {\r\n\r\n//    public static final String BASE_URL = \"https://www.food2fork.com\";\r\n    public static final String BASE_URL = \"https://recipesapi.herokuapp.com\";\r\n\r\n    // API_KEY is no longer necessary since food2fork has shutdown. This can be empty it doesn't matter.\r\n//    public static final String API_KEY = \"453556cb475252e7e42d65aa11912447\";\r\n    public static final String API_KEY = \"\";\r\n\r\n    public static final int CONNECTION_TIMEOUT = 10; // 10 seconds\r\n    public static final int READ_TIMEOUT = 2; // 2 seconds\r\n    public static final int WRITE_TIMEOUT = 2; // 2 seconds\r\n\r\n    public static final int RECIPE_REFRESH_TIME = 60 * 60 * 24 * 30; // 30 days (in seconds)\r\n\r\n\r\n    public static final String[] DEFAULT_SEARCH_CATEGORIES =\r\n            {\"Barbeque\", \"Breakfast\", \"Chicken\", \"Beef\", \"Brunch\", \"Dinner\", \"Wine\", \"Italian\"};\r\n\r\n    public static final String[] DEFAULT_SEARCH_CATEGORY_IMAGES =\r\n            {\r\n                    \"barbeque\",\r\n                    \"breakfast\",\r\n                    \"chicken\",\r\n                    \"beef\",\r\n                    \"brunch\",\r\n                    \"dinner\",\r\n                    \"wine\",\r\n                    \"italian\"\r\n            };\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/codingwithmitch/foodrecipes/util/Constants.java	(revision 65169790ccc254e9a94ea180c3d920e90a160f14)
++++ app/src/main/java/com/codingwithmitch/foodrecipes/util/Constants.java	(date 1619804813107)
+@@ -2,18 +2,10 @@
+ 
+ public class Constants {
+ 
+-//    public static final String BASE_URL = "https://www.food2fork.com";
+-    public static final String BASE_URL = "https://recipesapi.herokuapp.com";
+-
+-    // API_KEY is no longer necessary since food2fork has shutdown. This can be empty it doesn't matter.
+-//    public static final String API_KEY = "453556cb475252e7e42d65aa11912447";
+-    public static final String API_KEY = "";
++    public static final String BASE_URL = "https://www.food2fork.com";
+ 
+-    public static final int CONNECTION_TIMEOUT = 10; // 10 seconds
+-    public static final int READ_TIMEOUT = 2; // 2 seconds
+-    public static final int WRITE_TIMEOUT = 2; // 2 seconds
+-
+-    public static final int RECIPE_REFRESH_TIME = 60 * 60 * 24 * 30; // 30 days (in seconds)
++    // YOU NEED YOUR OWN API KEY!!!!!!!!!!!!! https://www.food2fork.com/about/api
++    public static final String API_KEY = "dadc63b6325aaf398163b40fea9b5e79";
+ 
+ 
+     public static final String[] DEFAULT_SEARCH_CATEGORIES =
+Index: app/src/main/java/com/codingwithmitch/foodrecipes/repositories/RecipeRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.codingwithmitch.foodrecipes.repositories;\r\n\r\nimport android.arch.lifecycle.LiveData;\r\nimport android.content.Context;\r\nimport android.support.annotation.NonNull;\r\nimport android.support.annotation.Nullable;\r\nimport android.util.Log;\r\n\r\nimport com.codingwithmitch.foodrecipes.AppExecutors;\r\nimport com.codingwithmitch.foodrecipes.models.Recipe;\r\nimport com.codingwithmitch.foodrecipes.persistence.RecipeDao;\r\nimport com.codingwithmitch.foodrecipes.persistence.RecipeDatabase;\r\nimport com.codingwithmitch.foodrecipes.requests.ServiceGenerator;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;\r\nimport com.codingwithmitch.foodrecipes.util.Constants;\r\nimport com.codingwithmitch.foodrecipes.util.NetworkBoundResource;\r\nimport com.codingwithmitch.foodrecipes.util.Resource;\r\n\r\nimport java.util.List;\r\n\r\npublic class RecipeRepository {\r\n\r\n    private static final String TAG = \"RecipeRepository\";\r\n\r\n    private static RecipeRepository instance;\r\n    private RecipeDao recipeDao;\r\n\r\n    public static RecipeRepository getInstance(Context context){\r\n        if(instance == null){\r\n            instance = new RecipeRepository(context);\r\n        }\r\n        return instance;\r\n    }\r\n\r\n\r\n    private RecipeRepository(Context context) {\r\n        recipeDao = RecipeDatabase.getInstance(context).getRecipeDao();\r\n    }\r\n\r\n\r\n    public LiveData<Resource<List<Recipe>>> searchRecipesApi(final String query, final int pageNumber){\r\n        return new NetworkBoundResource<List<Recipe>, RecipeSearchResponse>(AppExecutors.getInstance()){\r\n\r\n            @Override\r\n            protected void saveCallResult(@NonNull RecipeSearchResponse item) {\r\n\r\n                if(item.getRecipes() != null){ // recipe list will be null if the api key is expired\r\n//                    Log.d(TAG, \"saveCallResult: recipe response: \" + item.toString());\r\n\r\n                    Recipe[] recipes = new Recipe[item.getRecipes().size()];\r\n\r\n                    int index = 0;\r\n                    for(long rowid: recipeDao.insertRecipes((Recipe[]) (item.getRecipes().toArray(recipes)))){\r\n                        if(rowid == -1){\r\n                            Log.d(TAG, \"saveCallResult: CONFLICT... This recipe is already in the cache\");\r\n                            // if the recipe already exists... I don't want to set the ingredients or timestamp b/c\r\n                            // they will be erased\r\n                            recipeDao.updateRecipe(\r\n                                    recipes[index].getRecipe_id(),\r\n                                    recipes[index].getTitle(),\r\n                                    recipes[index].getPublisher(),\r\n                                    recipes[index].getImage_url(),\r\n                                    recipes[index].getSocial_rank()\r\n                            );\r\n                        }\r\n                        index++;\r\n                    }\r\n                }\r\n            }\r\n\r\n            @Override\r\n            protected boolean shouldFetch(@Nullable List<Recipe> data) {\r\n                return true;\r\n            }\r\n\r\n            @NonNull\r\n            @Override\r\n            protected LiveData<List<Recipe>> loadFromDb() {\r\n                return recipeDao.searchRecipes(query, pageNumber);\r\n            }\r\n\r\n            @NonNull\r\n            @Override\r\n            protected LiveData<ApiResponse<RecipeSearchResponse>> createCall() {\r\n                return ServiceGenerator.getRecipeApi()\r\n                        .searchRecipe(\r\n                                Constants.API_KEY,\r\n                                query,\r\n                                String.valueOf(pageNumber)\r\n                        );\r\n            }\r\n        }.getAsLiveData();\r\n    }\r\n\r\n    public LiveData<Resource<Recipe>> searchRecipesApi(final String recipeId){\r\n        return new NetworkBoundResource<Recipe, RecipeResponse>(AppExecutors.getInstance()){\r\n            @Override\r\n            protected void saveCallResult(@NonNull RecipeResponse item) {\r\n\r\n                // will be null if API key is expired\r\n                if(item.getRecipe() != null){\r\n                    item.getRecipe().setTimestamp((int)(System.currentTimeMillis() / 1000));\r\n                    recipeDao.insertRecipe(item.getRecipe());\r\n                }\r\n            }\r\n\r\n            @Override\r\n            protected boolean shouldFetch(@Nullable Recipe data) {\r\n                Log.d(TAG, \"shouldFetch: recipe: \" + data.toString());\r\n                int currentTime = (int)(System.currentTimeMillis() / 1000);\r\n                Log.d(TAG, \"shouldFetch: current time: \" + currentTime);\r\n                int lastRefresh = data.getTimestamp();\r\n                Log.d(TAG, \"shouldFetch: last refresh: \" + lastRefresh);\r\n                Log.d(TAG, \"shouldFetch: it's been \" + ((currentTime - lastRefresh) / 60 / 60 / 24) +\r\n                        \" days since this recipe was refreshed. 30 days must elapse before refreshing. \");\r\n                if((currentTime - data.getTimestamp()) >= Constants.RECIPE_REFRESH_TIME){\r\n                    Log.d(TAG, \"shouldFetch: SHOULD REFRESH RECIPE?! \" + true);\r\n                    return true;\r\n                }\r\n                Log.d(TAG, \"shouldFetch: SHOULD REFRESH RECIPE?! \" + false);\r\n                return false;\r\n            }\r\n\r\n            @NonNull\r\n            @Override\r\n            protected LiveData<Recipe> loadFromDb() {\r\n                return recipeDao.getRecipe(recipeId);\r\n            }\r\n\r\n            @NonNull\r\n            @Override\r\n            protected LiveData<ApiResponse<RecipeResponse>> createCall() {\r\n                return ServiceGenerator.getRecipeApi().getRecipe(\r\n                        Constants.API_KEY,\r\n                        recipeId\r\n                );\r\n            }\r\n        }.getAsLiveData();\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/codingwithmitch/foodrecipes/repositories/RecipeRepository.java	(revision 65169790ccc254e9a94ea180c3d920e90a160f14)
++++ app/src/main/java/com/codingwithmitch/foodrecipes/repositories/RecipeRepository.java	(date 1619804818034)
+@@ -12,7 +12,6 @@
+ import com.codingwithmitch.foodrecipes.persistence.RecipeDatabase;
+ import com.codingwithmitch.foodrecipes.requests.ServiceGenerator;
+ import com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;
+-import com.codingwithmitch.foodrecipes.requests.responses.RecipeResponse;
+ import com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;
+ import com.codingwithmitch.foodrecipes.util.Constants;
+ import com.codingwithmitch.foodrecipes.util.NetworkBoundResource;
+@@ -39,24 +38,19 @@
+         recipeDao = RecipeDatabase.getInstance(context).getRecipeDao();
+     }
+ 
+-
+     public LiveData<Resource<List<Recipe>>> searchRecipesApi(final String query, final int pageNumber){
+-        return new NetworkBoundResource<List<Recipe>, RecipeSearchResponse>(AppExecutors.getInstance()){
++        return new NetworkBoundResource<List<Recipe>, RecipeSearchResponse>(AppExecutors.getInstance() ){
+ 
+             @Override
+-            protected void saveCallResult(@NonNull RecipeSearchResponse item) {
+-
+-                if(item.getRecipes() != null){ // recipe list will be null if the api key is expired
+-//                    Log.d(TAG, "saveCallResult: recipe response: " + item.toString());
+-
++            public void saveCallResult(@NonNull RecipeSearchResponse item) {
++                if(item.getRecipes() != null){ // recipe list will be null if api key is expired
+                     Recipe[] recipes = new Recipe[item.getRecipes().size()];
+ 
+                     int index = 0;
+-                    for(long rowid: recipeDao.insertRecipes((Recipe[]) (item.getRecipes().toArray(recipes)))){
+-                        if(rowid == -1){
+-                            Log.d(TAG, "saveCallResult: CONFLICT... This recipe is already in the cache");
+-                            // if the recipe already exists... I don't want to set the ingredients or timestamp b/c
+-                            // they will be erased
++                    for(long rowId: recipeDao.insertRecipes((Recipe[])(item.getRecipes().toArray(recipes)))){
++                        if(rowId == -1){ // conflict detected
++                            Log.d(TAG, "saveCallResult: CONFLICT... This recipe is already in cache.");
++                            // if already exists, I don't want to set the ingredients or timestamp b/c they will be erased
+                             recipeDao.updateRecipe(
+                                     recipes[index].getRecipe_id(),
+                                     recipes[index].getTitle(),
+@@ -71,72 +65,26 @@
+             }
+ 
+             @Override
+-            protected boolean shouldFetch(@Nullable List<Recipe> data) {
+-                return true;
++            public boolean shouldFetch(@Nullable List<Recipe> data) {
++                return true; // always query the network since the queries can be anything
+             }
+ 
+             @NonNull
+             @Override
+-            protected LiveData<List<Recipe>> loadFromDb() {
++            public LiveData<List<Recipe>> loadFromDb() {
+                 return recipeDao.searchRecipes(query, pageNumber);
+             }
+ 
+             @NonNull
+             @Override
+-            protected LiveData<ApiResponse<RecipeSearchResponse>> createCall() {
+-                return ServiceGenerator.getRecipeApi()
+-                        .searchRecipe(
+-                                Constants.API_KEY,
+-                                query,
+-                                String.valueOf(pageNumber)
+-                        );
++            public LiveData<ApiResponse<RecipeSearchResponse>> createCall() {
++                return ServiceGenerator.getRecipeApi().searchRecipe(
++                        Constants.API_KEY,
++                        query,
++                        String.valueOf(pageNumber)
++                );
+             }
+-        }.getAsLiveData();
+-    }
+-
+-    public LiveData<Resource<Recipe>> searchRecipesApi(final String recipeId){
+-        return new NetworkBoundResource<Recipe, RecipeResponse>(AppExecutors.getInstance()){
+-            @Override
+-            protected void saveCallResult(@NonNull RecipeResponse item) {
+-
+-                // will be null if API key is expired
+-                if(item.getRecipe() != null){
+-                    item.getRecipe().setTimestamp((int)(System.currentTimeMillis() / 1000));
+-                    recipeDao.insertRecipe(item.getRecipe());
+-                }
+-            }
+-
+-            @Override
+-            protected boolean shouldFetch(@Nullable Recipe data) {
+-                Log.d(TAG, "shouldFetch: recipe: " + data.toString());
+-                int currentTime = (int)(System.currentTimeMillis() / 1000);
+-                Log.d(TAG, "shouldFetch: current time: " + currentTime);
+-                int lastRefresh = data.getTimestamp();
+-                Log.d(TAG, "shouldFetch: last refresh: " + lastRefresh);
+-                Log.d(TAG, "shouldFetch: it's been " + ((currentTime - lastRefresh) / 60 / 60 / 24) +
+-                        " days since this recipe was refreshed. 30 days must elapse before refreshing. ");
+-                if((currentTime - data.getTimestamp()) >= Constants.RECIPE_REFRESH_TIME){
+-                    Log.d(TAG, "shouldFetch: SHOULD REFRESH RECIPE?! " + true);
+-                    return true;
+-                }
+-                Log.d(TAG, "shouldFetch: SHOULD REFRESH RECIPE?! " + false);
+-                return false;
+-            }
+ 
+-            @NonNull
+-            @Override
+-            protected LiveData<Recipe> loadFromDb() {
+-                return recipeDao.getRecipe(recipeId);
+-            }
+-
+-            @NonNull
+-            @Override
+-            protected LiveData<ApiResponse<RecipeResponse>> createCall() {
+-                return ServiceGenerator.getRecipeApi().getRecipe(
+-                        Constants.API_KEY,
+-                        recipeId
+-                );
+-            }
+         }.getAsLiveData();
+     }
+ }
+@@ -152,3 +100,9 @@
+ 
+ 
+ 
++
++
++
++
++
++
+Index: .idea/jarRepositories.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/jarRepositories.xml	(date 1619804818148)
++++ .idea/jarRepositories.xml	(date 1619804818148)
+@@ -0,0 +1,40 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="RemoteRepositoriesConfiguration">
++    <remote-repository>
++      <option name="id" value="central" />
++      <option name="name" value="Maven Central repository" />
++      <option name="url" value="https://repo1.maven.org/maven2" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="jboss.community" />
++      <option name="name" value="JBoss Community repository" />
++      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="BintrayJCenter" />
++      <option name="name" value="BintrayJCenter" />
++      <option name="url" value="https://jcenter.bintray.com/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="Google" />
++      <option name="name" value="Google" />
++      <option name="url" value="https://dl.google.com/dl/android/maven2/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\google\m2repository" />
++      <option name="name" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\google\m2repository" />
++      <option name="url" value="file:/$PROJECT_DIR$/../../../../Ubaid%20Warraich/AppData/Local/Android/Sdk/extras/google/m2repository" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\m2repository" />
++      <option name="name" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\m2repository" />
++      <option name="url" value="file:/$PROJECT_DIR$/../../../../Ubaid%20Warraich/AppData/Local/Android/Sdk/extras/m2repository" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\android\m2repository" />
++      <option name="name" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\android\m2repository" />
++      <option name="url" value="file:/$PROJECT_DIR$/../../../../Ubaid%20Warraich/AppData/Local/Android/Sdk/extras/android/m2repository" />
++    </remote-repository>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/compiler.xml	(date 1619804818138)
++++ .idea/compiler.xml	(date 1619804818138)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="CompilerConfiguration">
++    <bytecodeTargetLevel>
++      <module name="Local-db-Cache-Retrofit-REST-API-MVVM.app" target="1.8" />
++    </bytecodeTargetLevel>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/gradle.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"GradleSettings\">\r\n    <option name=\"linkedExternalProjectsSettings\">\r\n      <GradleProjectSettings>\r\n        <compositeConfiguration>\r\n          <compositeBuild compositeDefinitionSource=\"SCRIPT\" />\r\n        </compositeConfiguration>\r\n        <option name=\"distributionType\" value=\"DEFAULT_WRAPPED\" />\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"resolveModulePerSourceSet\" value=\"false\" />\r\n      </GradleProjectSettings>\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/gradle.xml	(revision 65169790ccc254e9a94ea180c3d920e90a160f14)
++++ .idea/gradle.xml	(date 1619804818064)
+@@ -3,12 +3,17 @@
+   <component name="GradleSettings">
+     <option name="linkedExternalProjectsSettings">
+       <GradleProjectSettings>
+-        <compositeConfiguration>
+-          <compositeBuild compositeDefinitionSource="SCRIPT" />
+-        </compositeConfiguration>
++        <option name="testRunner" value="PLATFORM" />
+         <option name="distributionType" value="DEFAULT_WRAPPED" />
+         <option name="externalProjectPath" value="$PROJECT_DIR$" />
++        <option name="modules">
++          <set>
++            <option value="$PROJECT_DIR$" />
++            <option value="$PROJECT_DIR$/app" />
++          </set>
++        </option>
+         <option name="resolveModulePerSourceSet" value="false" />
++        <option name="useQualifiedModuleNames" value="true" />
+       </GradleProjectSettings>
+     </option>
+   </component>
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"VcsDirectoryMappings\">\r\n    <mapping directory=\"\" vcs=\"Git\" />\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/vcs.xml	(revision 65169790ccc254e9a94ea180c3d920e90a160f14)
++++ .idea/vcs.xml	(date 1619804818105)
+@@ -1,6 +1,6 @@
+ <?xml version="1.0" encoding="UTF-8"?>
+ <project version="4">
+   <component name="VcsDirectoryMappings">
+-    <mapping directory="" vcs="Git" />
++    <mapping directory="$PROJECT_DIR$" vcs="Git" />
+   </component>
+ </project>
+\ No newline at end of file

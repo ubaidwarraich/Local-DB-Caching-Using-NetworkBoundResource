@@ -1,0 +1,185 @@
+Index: app/src/main/java/com/codingwithmitch/foodrecipes/requests/RecipeApi.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.codingwithmitch.foodrecipes.requests;\r\n\r\nimport android.arch.lifecycle.LiveData;\r\n\r\nimport com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;\r\n\r\nimport retrofit2.Call;\r\nimport retrofit2.http.GET;\r\nimport retrofit2.http.Query;\r\n\r\npublic interface RecipeApi {\r\n\r\n    // SEARCH\r\n    @GET(\"api/search\")\r\n    LiveData<ApiResponse<RecipeSearchResponse>> searchRecipe(\r\n            @Query(\"key\") String key,\r\n            @Query(\"q\") String query,\r\n            @Query(\"page\") String page\r\n    );\r\n\r\n    // GET RECIPE REQUEST\r\n    @GET(\"api/get\")\r\n    LiveData<ApiResponse<RecipeResponse>> getRecipe(\r\n            @Query(\"key\") String key,\r\n            @Query(\"rId\") String recipe_id\r\n    );\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/codingwithmitch/foodrecipes/requests/RecipeApi.java	(revision eb047311e21b891c24309af7fbdd51617ba5829b)
++++ app/src/main/java/com/codingwithmitch/foodrecipes/requests/RecipeApi.java	(date 1619790026835)
+@@ -8,22 +8,22 @@
+ 
+ import retrofit2.Call;
+ import retrofit2.http.GET;
++import retrofit2.http.Path;
+ import retrofit2.http.Query;
+ 
+ public interface RecipeApi {
+ 
+-    // SEARCH
+-    @GET("api/search")
++
++    //    Search
++    @GET("api/v2/recipes")
+     LiveData<ApiResponse<RecipeSearchResponse>> searchRecipe(
+-            @Query("key") String key,
+             @Query("q") String query,
+             @Query("page") String page
+     );
+ 
+-    // GET RECIPE REQUEST
+-    @GET("api/get")
++    //Get Recipe Request
++    @GET("api/v2/recipes/{Id}")
+     LiveData<ApiResponse<RecipeResponse>> getRecipe(
+-            @Query("key") String key,
+-            @Query("rId") String recipe_id
++            @Path("Id") String recipe_id
+     );
+ }
+Index: app/src/main/java/com/codingwithmitch/foodrecipes/util/Constants.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.codingwithmitch.foodrecipes.util;\r\n\r\npublic class Constants {\r\n\r\n    public static final String BASE_URL = \"https://www.food2fork.com\";\r\n\r\n    // YOU NEED YOUR OWN API KEY!!!!!!!!!!!!! https://www.food2fork.com/about/api\r\n    public static final String API_KEY = \"dadc63b6325aaf398163b40fea9b5e79\";\r\n\r\n\r\n    public static final String[] DEFAULT_SEARCH_CATEGORIES =\r\n            {\"Barbeque\", \"Breakfast\", \"Chicken\", \"Beef\", \"Brunch\", \"Dinner\", \"Wine\", \"Italian\"};\r\n\r\n    public static final String[] DEFAULT_SEARCH_CATEGORY_IMAGES =\r\n            {\r\n                    \"barbeque\",\r\n                    \"breakfast\",\r\n                    \"chicken\",\r\n                    \"beef\",\r\n                    \"brunch\",\r\n                    \"dinner\",\r\n                    \"wine\",\r\n                    \"italian\"\r\n            };\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/codingwithmitch/foodrecipes/util/Constants.java	(revision eb047311e21b891c24309af7fbdd51617ba5829b)
++++ app/src/main/java/com/codingwithmitch/foodrecipes/util/Constants.java	(date 1619789960678)
+@@ -2,7 +2,7 @@
+ 
+ public class Constants {
+ 
+-    public static final String BASE_URL = "https://www.food2fork.com";
++    public static final String BASE_URL = "https://recipesapi.herokuapp.com/";
+ 
+     // YOU NEED YOUR OWN API KEY!!!!!!!!!!!!! https://www.food2fork.com/about/api
+     public static final String API_KEY = "dadc63b6325aaf398163b40fea9b5e79";
+Index: app/src/main/java/com/codingwithmitch/foodrecipes/repositories/RecipeRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.codingwithmitch.foodrecipes.repositories;\r\n\r\nimport android.arch.lifecycle.LiveData;\r\nimport android.content.Context;\r\nimport android.support.annotation.NonNull;\r\nimport android.support.annotation.Nullable;\r\nimport android.util.Log;\r\n\r\nimport com.codingwithmitch.foodrecipes.AppExecutors;\r\nimport com.codingwithmitch.foodrecipes.models.Recipe;\r\nimport com.codingwithmitch.foodrecipes.persistence.RecipeDao;\r\nimport com.codingwithmitch.foodrecipes.persistence.RecipeDatabase;\r\nimport com.codingwithmitch.foodrecipes.requests.ServiceGenerator;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.ApiResponse;\r\nimport com.codingwithmitch.foodrecipes.requests.responses.RecipeSearchResponse;\r\nimport com.codingwithmitch.foodrecipes.util.Constants;\r\nimport com.codingwithmitch.foodrecipes.util.NetworkBoundResource;\r\nimport com.codingwithmitch.foodrecipes.util.Resource;\r\n\r\nimport java.util.List;\r\n\r\npublic class RecipeRepository {\r\n\r\n    private static final String TAG = \"RecipeRepository\";\r\n\r\n    private static RecipeRepository instance;\r\n    private RecipeDao recipeDao;\r\n\r\n    public static RecipeRepository getInstance(Context context){\r\n        if(instance == null){\r\n            instance = new RecipeRepository(context);\r\n        }\r\n        return instance;\r\n    }\r\n\r\n\r\n    private RecipeRepository(Context context) {\r\n        recipeDao = RecipeDatabase.getInstance(context).getRecipeDao();\r\n    }\r\n\r\n    public LiveData<Resource<List<Recipe>>> searchRecipesApi(final String query, final int pageNumber){\r\n        return new NetworkBoundResource<List<Recipe>, RecipeSearchResponse>(AppExecutors.getInstance() ){\r\n\r\n            @Override\r\n            public void saveCallResult(@NonNull RecipeSearchResponse item) {\r\n                if(item.getRecipes() != null){ // recipe list will be null if api key is expired\r\n                    Recipe[] recipes = new Recipe[item.getRecipes().size()];\r\n\r\n                    int index = 0;\r\n                    for(long rowId: recipeDao.insertRecipes((Recipe[])(item.getRecipes().toArray(recipes)))){\r\n                        if(rowId == -1){ // conflict detected\r\n                            Log.d(TAG, \"saveCallResult: CONFLICT... This recipe is already in cache.\");\r\n                            // if already exists, I don't want to set the ingredients or timestamp b/c they will be erased\r\n                            recipeDao.updateRecipe(\r\n                                    recipes[index].getRecipe_id(),\r\n                                    recipes[index].getTitle(),\r\n                                    recipes[index].getPublisher(),\r\n                                    recipes[index].getImage_url(),\r\n                                    recipes[index].getSocial_rank()\r\n                            );\r\n                        }\r\n                        index++;\r\n                    }\r\n                }\r\n            }\r\n\r\n            @Override\r\n            public boolean shouldFetch(@Nullable List<Recipe> data) {\r\n                return true; // always query the network since the queries can be anything\r\n            }\r\n\r\n            @NonNull\r\n            @Override\r\n            public LiveData<List<Recipe>> loadFromDb() {\r\n                return recipeDao.searchRecipes(query, pageNumber);\r\n            }\r\n\r\n            @NonNull\r\n            @Override\r\n            public LiveData<ApiResponse<RecipeSearchResponse>> createCall() {\r\n                return ServiceGenerator.getRecipeApi().searchRecipe(\r\n                        Constants.API_KEY,\r\n                        query,\r\n                        String.valueOf(pageNumber)\r\n                );\r\n            }\r\n\r\n        }.getAsLiveData();\r\n    }\r\n}\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- app/src/main/java/com/codingwithmitch/foodrecipes/repositories/RecipeRepository.java	(revision eb047311e21b891c24309af7fbdd51617ba5829b)
++++ app/src/main/java/com/codingwithmitch/foodrecipes/repositories/RecipeRepository.java	(date 1619790050862)
+@@ -79,7 +79,6 @@
+             @Override
+             public LiveData<ApiResponse<RecipeSearchResponse>> createCall() {
+                 return ServiceGenerator.getRecipeApi().searchRecipe(
+-                        Constants.API_KEY,
+                         query,
+                         String.valueOf(pageNumber)
+                 );
+Index: .idea/gradle.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"GradleSettings\">\r\n    <option name=\"linkedExternalProjectsSettings\">\r\n      <GradleProjectSettings>\r\n        <compositeConfiguration>\r\n          <compositeBuild compositeDefinitionSource=\"SCRIPT\" />\r\n        </compositeConfiguration>\r\n        <option name=\"distributionType\" value=\"DEFAULT_WRAPPED\" />\r\n        <option name=\"externalProjectPath\" value=\"$PROJECT_DIR$\" />\r\n        <option name=\"resolveModulePerSourceSet\" value=\"false\" />\r\n      </GradleProjectSettings>\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/gradle.xml	(revision eb047311e21b891c24309af7fbdd51617ba5829b)
++++ .idea/gradle.xml	(date 1619789319037)
+@@ -3,12 +3,17 @@
+   <component name="GradleSettings">
+     <option name="linkedExternalProjectsSettings">
+       <GradleProjectSettings>
+-        <compositeConfiguration>
+-          <compositeBuild compositeDefinitionSource="SCRIPT" />
+-        </compositeConfiguration>
++        <option name="testRunner" value="PLATFORM" />
+         <option name="distributionType" value="DEFAULT_WRAPPED" />
+         <option name="externalProjectPath" value="$PROJECT_DIR$" />
++        <option name="modules">
++          <set>
++            <option value="$PROJECT_DIR$" />
++            <option value="$PROJECT_DIR$/app" />
++          </set>
++        </option>
+         <option name="resolveModulePerSourceSet" value="false" />
++        <option name="useQualifiedModuleNames" value="true" />
+       </GradleProjectSettings>
+     </option>
+   </component>
+Index: .idea/vcs.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/vcs.xml	(date 1619789744721)
++++ .idea/vcs.xml	(date 1619789744721)
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="VcsDirectoryMappings">
++    <mapping directory="$PROJECT_DIR$" vcs="Git" />
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/compiler.xml	(date 1619789319024)
++++ .idea/compiler.xml	(date 1619789319024)
+@@ -0,0 +1,8 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="CompilerConfiguration">
++    <bytecodeTargetLevel>
++      <module name="Local-db-Cache-Retrofit-REST-API-MVVM.app" target="1.8" />
++    </bytecodeTargetLevel>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/jarRepositories.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+--- .idea/jarRepositories.xml	(date 1619789744745)
++++ .idea/jarRepositories.xml	(date 1619789744745)
+@@ -0,0 +1,40 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="RemoteRepositoriesConfiguration">
++    <remote-repository>
++      <option name="id" value="central" />
++      <option name="name" value="Maven Central repository" />
++      <option name="url" value="https://repo1.maven.org/maven2" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="jboss.community" />
++      <option name="name" value="JBoss Community repository" />
++      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="BintrayJCenter" />
++      <option name="name" value="BintrayJCenter" />
++      <option name="url" value="https://jcenter.bintray.com/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="Google" />
++      <option name="name" value="Google" />
++      <option name="url" value="https://dl.google.com/dl/android/maven2/" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\google\m2repository" />
++      <option name="name" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\google\m2repository" />
++      <option name="url" value="file:/$PROJECT_DIR$/../../../../Ubaid%20Warraich/AppData/Local/Android/Sdk/extras/google/m2repository" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\m2repository" />
++      <option name="name" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\m2repository" />
++      <option name="url" value="file:/$PROJECT_DIR$/../../../../Ubaid%20Warraich/AppData/Local/Android/Sdk/extras/m2repository" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\android\m2repository" />
++      <option name="name" value="C:\Users\Ubaid Warraich\AppData\Local\Android\Sdk\extras\android\m2repository" />
++      <option name="url" value="file:/$PROJECT_DIR$/../../../../Ubaid%20Warraich/AppData/Local/Android/Sdk/extras/android/m2repository" />
++    </remote-repository>
++  </component>
++</project>
+\ No newline at end of file
